@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Password Strength Checker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h2>🔒 Password Strength Checker</h2>
+
+        <input type="password" id="password" placeholder="Enter your password" required>
+        <div class="strength-meter">
+            <div id="strength-bar"></div>
+        </div>
+        <p id="strength-text"></p>
+        <ul id="suggestions"></ul>
+    </div>
+
+    <script>
+        let weakPasswords = [];
+
+        // Load weak passwords from JSON file
+        fetch("/weak_passwords.json")
+            .then(response => response.json())
+            .then(data => {
+                weakPasswords = data.map(p => p.toLowerCase()); // normalize to lowercase
+            });
+
+        const passwordInput = document.getElementById("password");
+        const strengthBar = document.getElementById("strength-bar");
+        const strengthText = document.getElementById("strength-text");
+        const suggestionsList = document.getElementById("suggestions");
+
+        passwordInput.addEventListener("input", () => {
+            const password = passwordInput.value.toLowerCase();
+            let strength = 0;
+            let suggestions = [];
+
+            // Check if password is in weak list
+            if (weakPasswords.includes(password)) {
+                strength = 0;
+                suggestions.push("Avoid common passwords like '" + password + "'");
+            } else {
+                if (password.length >= 8) strength++;
+                else suggestions.push("Use at least 8 characters");
+
+                if (/[0-9]/.test(password)) strength++;
+                else suggestions.push("Add numbers");
+
+                if (/[A-Z]/.test(password)) strength++;
+                else suggestions.push("Add uppercase letters");
+
+                if (/[a-z]/.test(password)) strength++;
+                else suggestions.push("Add lowercase letters");
+
+                if (/[^A-Za-z0-9]/.test(password)) strength++;
+                else suggestions.push("Add special characters");
+            }
+
+            // Update strength bar
+            let strengthPercentage = (strength / 5) * 100;
+            strengthBar.style.width = strengthPercentage + "%";
+
+            if (strength === 0) {
+                strengthBar.style.background = "red";
+                strengthText.textContent = "Very Weak";
+            } else if (strength <= 2) {
+                strengthBar.style.background = "red";
+                strengthText.textContent = "Weak";
+            } else if (strength === 3) {
+                strengthBar.style.background = "orange";
+                strengthText.textContent = "Medium";
+            } else {
+                strengthBar.style.background = "green";
+                strengthText.textContent = "Strong";
+            }
+
+            // Update suggestions
+            suggestionsList.innerHTML = "";
+            suggestions.forEach(s => {
+                let li = document.createElement("li");
+                li.textContent = s;
+                suggestionsList.appendChild(li);
+            });
+        });
+    </script>
+</body>
+
+</html>
