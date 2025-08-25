@@ -1,3 +1,7 @@
+To test the project please click th following link:
+https://password-strength-checker-7iov.onrender.com
+
+
 🔐 Password Strength Checker
 
 A simple web app that checks how strong your password is.
